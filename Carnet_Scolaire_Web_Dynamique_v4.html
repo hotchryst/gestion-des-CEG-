@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carnet Scolaire CEG — Version dynamique</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+:root{--nav:#123b5d;--nav2:#0b2941;--accent:#1677b8;--bg:#f3f6f9;--card:#fff;--line:#d6e0e8;--text:#172a38;--muted:#607482;--danger:#b42318;--ok:#087443;--warn:#9a6700}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.side{width:255px;background:var(--nav2);color:#fff;position:fixed;inset:0 auto 0 0;overflow:auto}.brand{padding:18px;border-bottom:1px solid #ffffff22}.brand b{font-size:20px}.brand small{display:block;color:#b9cad6;margin-top:5px}.nav{padding:9px}.group{font-size:10px;text-transform:uppercase;color:#7fa1b8;padding:14px 11px 5px;font-weight:800}.nav button{display:block;width:100%;text-align:left;background:transparent;color:#dce8ef;border:0;border-radius:7px;padding:10px 11px;margin:2px 0;font-weight:650;cursor:pointer}.nav button:hover,.nav button.active{background:#1a527d;color:#fff}
+.main{margin-left:255px;width:calc(100% - 255px)}.top{background:#fff;border-bottom:1px solid var(--line);padding:14px 20px;position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center}.top h1{font-size:20px;margin:0}.top small{color:var(--muted)}.content{padding:18px;max-width:1800px;margin:auto}.view{display:none}.view.show{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 2px 7px #123b5d0a}.toolbar{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}.btn{border:1px solid var(--line);background:#fff;color:#183b55;border-radius:7px;padding:8px 12px;font-weight:700;cursor:pointer}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}.btn.warn{background:#fff4d6;border-color:#e7c56a;color:#694b00}.btn:disabled{opacity:.5;cursor:not-allowed}
+.grid{display:grid;gap:10px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+label{font-size:12px;font-weight:750;color:#51636f;display:block;margin-bottom:4px}input,select,textarea{width:100%;padding:8px 9px;border:1px solid #cbd7df;border-radius:7px;background:#fff;font:inherit}textarea{min-height:75px;resize:vertical}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:68vh}table{border-collapse:collapse;width:100%;min-width:900px;font-size:12px}th,td{padding:7px 8px;border-bottom:1px solid #e7edf1;text-align:left;white-space:nowrap}th{background:#eef4f8;position:sticky;top:0;color:#23445a;z-index:1}tr:hover{background:#f8fbfd}.actions{display:flex;gap:4px}.actions .btn{padding:5px 7px;font-size:11px}.empty{text-align:center;color:var(--muted);padding:30px}.tag{display:inline-block;border-radius:20px;background:#e8f2f8;padding:3px 8px}.notice{padding:10px 12px;background:#edf7ff;border-left:4px solid var(--accent);border-radius:5px;margin-bottom:12px;font-size:13px}.success{background:#edf9f2;border-left-color:var(--ok)}.warning{background:#fff8e6;border-left-color:#d69e00}.dangertext{color:var(--danger)}.muted{color:var(--muted)}.stat{background:#f7fafc;border:1px solid var(--line);border-radius:9px;padding:12px}.stat span{font-size:12px;color:var(--muted)}.stat b{display:block;font-size:22px;color:var(--nav);margin-top:3px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:50;align-items:center;justify-content:center;padding:12px}.modal.open{display:flex}.modalbox{background:#fff;width:min(980px,97vw);max-height:94vh;overflow:auto;border-radius:11px;padding:18px}.modalbox h2{margin:0 0 14px}.modalfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:17px}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.full{grid-column:1/-1}.invalid{border-color:var(--danger)!important;background:#fff5f5!important}
+.kpi{font-size:22px;font-weight:800}.small{font-size:11px}.center{text-align:center}.right{text-align:right}
+@media(max-width:1050px){.side{width:210px}.main{margin-left:210px;width:calc(100% - 210px)}.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.side{position:static;width:100%;height:auto}.app{display:block}.main{margin:0;width:100%}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.group{grid-column:1/-1}.g2,.g3,.g4,.g6,.form{grid-template-columns:1fr}.top{position:static}}
+@media print{.side,.top,.toolbar,.no-print,.modal{display:none!important}.main{margin:0;width:100%}.card{box-shadow:none;border:0}.tablewrap{max-height:none;overflow:visible}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+<div class="brand"><b>📘 Carnet Scolaire</b><small>Gestion dynamique du CEG</small></div>
+<nav class="nav">
+<div class="group">Structure</div>
+<button data-view="dashboard">⌂ Tableau de bord</button>
+<button data-view="ceg">🏫 CEG</button>
+<button data-view="classes">▣ Classes</button>
+<button data-view="apprenants">👨‍🎓 Apprenants</button>
+<button data-view="niveaux">◈ Niveaux</button>
+<button data-view="matieres">📚 Matières</button>
+<button data-view="affectations">🔗 Affectations pédagogiques</button>
+<button data-view="coefficients">× Coefficients</button>
+<div class="group">Personnel & horaires</div>
+<button data-view="enseignants">👨‍🏫 Enseignants</button>
+<button data-view="edt-classe">🗓 EDT classe</button>
+<button data-view="edt-enseignant">🗓 EDT enseignant</button>
+<div class="group">Évaluation</div>
+<button data-view="notes">✎ Notes</button>
+<button data-view="resultats">★ Résultats</button>
+<div class="group">Données</div>
+<button data-view="export">⇩ Export / sauvegarde</button>
+</nav>
+</aside>
+<main class="main">
+<header class="top"><div><h1 id="pageTitle">Tableau de bord</h1><small id="pageSub">Vue générale</small></div><div class="grid g2" style="min-width:280px"><div><label>Année scolaire</label><input id="yearInput" value="2026-2027"></div><button class="btn ok" style="align-self:end" onclick="changeYear()">Appliquer</button></div></header>
+<div class="content">
+<section id="dashboard" class="view show"></section>
+<section id="ceg" class="view"></section><section id="classes" class="view"></section><section id="apprenants" class="view"></section>
+<section id="niveaux" class="view"></section><section id="matieres" class="view"></section><section id="affectations" class="view"></section><section id="coefficients" class="view"></section>
+<section id="enseignants" class="view"></section><section id="edt-classe" class="view"></section><section id="edt-enseignant" class="view"></section>
+<section id="notes" class="view"></section><section id="resultats" class="view"></section><section id="export" class="view"></section>
+</div></main></div>
+<div id="modal" class="modal"><div class="modalbox"><h2 id="modalTitle"></h2><div id="modalBody"></div><div class="modalfoot"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn ok" onclick="submitModal()">Valider</button></div></div></div>
+
+<script>
+const DBKEY="ceg_carnet_v4";
+const EVALS=["EPE1","EPE2","DEV1","DEV2"], SEMS=["1er semestre","2nd semestre"], DAYS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+const TIMES=["07:00","08:00","09:00","10:00","11:00","12:00","14:00","15:00","16:00","17:00"];
+let db=loadDB(), modalCtx=null, currentView="dashboard";
+
+const $=id=>document.getElementById(id);
+function uid(p){return p+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8)}
+function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function get(arr,id){return (arr||[]).find(x=>x.id===id)}
+function className(id){return get(db.classes,id)?.name||""}
+function levelName(id){return get(db.levels,id)?.name||""}
+function cegName(id){return get(db.cegs,id)?.name||""}
+function subjectName(id){return get(db.subjects,id)?.name||""}
+function teacherName(id){return get(db.teachers,id)?.name||""}
+function learnerName(id){return get(db.learners,id)?.name||""}
+function input(id,label,value="",type="text",extra=""){return `<div><label>${label}</label><input id="${id}" type="${type}" value="${esc(value)}" ${extra}></div>`}
+function select(id,label,items,value="",placeholder="Sélectionner"){return `<div><label>${label}</label><select id="${id}"><option value="">${placeholder}</option>${items.map(x=>`<option value="${esc(x.id)}" ${x.id===value?"selected":""}>${esc(x.label)}</option>`).join("")}</select></div>`}
+function year(){return db.settings.year}
+function newDB(){
+ return {settings:{year:"2026-2027"},
+ cegs:[],levels:[],classes:[],learners:[],subjects:[],teachers:[],assignments:[],coefficients:[],notes:[],schedules:[],history:[]};
+}
+function migrate(old){
+ let d=newDB(); if(!old||typeof old!=="object") return d;
+ d.settings={year:old.settings?.year||"2026-2027"};
+ d.cegs=old.cegs||[];d.levels=old.levels||[];d.classes=old.classes||[];d.learners=old.learners||[];
+ d.subjects=old.subjects||[];d.teachers=old.teachers||[];
+ d.assignments=old.assignments||[];
+ d.coefficients=old.coefficients||[];
+ d.notes=old.notes||[];
+ d.schedules=old.schedules||[];
+ if(!d.schedules.length){
+   (old.schedulesClass||[]).forEach(x=>d.schedules.push({...x,id:x.id||uid("EDT")}));
+   (old.schedulesTeacher||[]).forEach(x=>{
+     if(!d.schedules.some(s=>s.day===x.day&&s.start===x.start&&s.end===x.end&&s.teacherId===x.teacherId&&s.classId===x.classId&&s.subjectId===x.subjectId))
+       d.schedules.push({...x,id:x.id||uid("EDT")});
+   });
+ }
+ d.history=old.history||[];
+ return d;
+}
+function loadDB(){try{let x=JSON.parse(localStorage.getItem(DBKEY)||"null");return migrate(x)}catch(e){return newDB()}}
+function save(render=true){localStorage.setItem(DBKEY,JSON.stringify(db));if(render)renderAll()}
+function arrFor(type){
+ return {ceg:db.cegs,niveau:db.levels,classe:db.classes,apprenant:db.learners,matiere:db.subjects,affectation:db.assignments,coefficient:db.coefficients,enseignant:db.teachers,note:db.notes,edt:db.schedules}[type];
+}
+function log(action,objet,id,detail=""){db.history.push({date:new Date().toISOString(),action,objet,id,detail,year:year()})}
+function optionsClasses(){return db.classes.map(x=>({id:x.id,label:x.name+" — "+levelName(x.levelId)}))}
+function optionsLearners(classId=""){return db.learners.filter(x=>!classId||x.classId===classId).map(x=>({id:x.id,label:x.name+" — "+x.matricule}))}
+function optionsSubjects(){return db.subjects.filter(x=>x.active!==false).map(x=>({id:x.id,label:(x.code?x.code+" — ":"")+x.name}))}
+function optionsTeachers(){return db.teachers.filter(x=>x.status!=="Inactif").map(x=>({id:x.id,label:x.name+(x.code?" — "+x.code:"")}))}
+function overlap(aStart,aEnd,bStart,bEnd){return aStart<bEnd&&bStart<aEnd}
+function scheduleConflict(n,excludeId=""){
+ return db.schedules.find(s=>s.id!==excludeId&&s.day===n.day&&overlap(s.start,s.end,n.start,n.end)&&(
+   (n.classId&&s.classId===n.classId)||(n.teacherId&&s.teacherId===n.teacherId)
+ ));
+}
+function coefficientFor(classId,subjectId,sem){
+ let a=db.coefficients.find(x=>x.classId===classId&&x.subjectId===subjectId&&x.semester===sem);
+ return a?Number(a.coef)||0:0;
+}
+function assignmentFor(classId,subjectId,sem=""){
+ return db.assignments.find(x=>x.classId===classId&&x.subjectId===subjectId&&(!sem||x.semester===sem));
+}
+function openEntity(type,obj=null){
+ modalCtx={type,obj};
+ const titles={ceg:"CEG",niveau:"Niveau",classe:"Classe",apprenant:"Apprenant",matiere:"Matière / discipline",affectation:"Affectation pédagogique",coefficient:"Coefficient",enseignant:"Enseignant",note:"Note",edt:"Cours / emploi du temps"};
+ $("modalTitle").textContent=(obj?"Modifier ":"Ajouter ")+(titles[type]||type);
+ let b="";
+ if(type==="ceg")b=`<div class="form">${input("x-name","Nom du CEG",obj?.name)}${input("x-code","Code",obj?.code)}${input("x-phone","Téléphone",obj?.phone)}${input("x-address","Adresse",obj?.address,"text","class='full'")}</div>`;
+ if(type==="niveau")b=`<div class="form">${input("x-name","Nom du niveau",obj?.name)}${input("x-code","Code niveau",obj?.code)}</div>`;
+ if(type==="classe")b=`<div class="form">${select("x-ceg","CEG",db.cegs.map(x=>({id:x.id,label:x.name})),obj?.cegId)}${select("x-level","Niveau",db.levels.map(x=>({id:x.id,label:x.name})),obj?.levelId)}${input("x-name","Nom de la classe",obj?.name)}${input("x-section","Série / section",obj?.section)}</div>`;
+ if(type==="apprenant")b=`<div class="form">${select("x-class","Classe",optionsClasses(),obj?.classId)}${input("x-mat","Matricule",obj?.matricule)}${input("x-name","Nom et prénoms",obj?.name)}${input("x-sex","Sexe",obj?.sex)}${input("x-dob","Date de naissance",obj?.dob,"date")}${input("x-status","Statut",obj?.status||"Actif")}</div>`;
+ if(type==="matiere")b=`<div class="form">${input("x-code","Code matière",obj?.code)}${input("x-name","Matière / discipline",obj?.name)}${input("x-cat","Catégorie",obj?.category)}${input("x-status","Statut",obj?.active===false?"Inactif":"Actif")}</div>`;
+ if(type==="affectation")b=`<div class="form">${select("x-class","Classe",optionsClasses(),obj?.classId)}${select("x-subject","Matière",optionsSubjects(),obj?.subjectId)}${select("x-teacher","Enseignant",optionsTeachers(),obj?.teacherId)}${select("x-sem","Semestre",SEMS.map(x=>({id:x,label:x})),obj?.semester||"","Toute l'année")}</div><div class="notice">Cette affectation est la relation pédagogique : <b>classe → matière → enseignant</b>. Les apprenants de la classe utilisent automatiquement ces matières pour les évaluations.</div>`;
+ if(type==="coefficient")b=`<div class="form">${select("x-class","Classe",optionsClasses(),obj?.classId)}${select("x-subject","Matière",optionsSubjects(),obj?.subjectId)}${select("x-sem","Semestre",SEMS.map(x=>({id:x,label:x})),obj?.semester)}${input("x-coef","Coefficient",obj?.coef??1,"number","min='0' step='0.01'")}</div><div class="notice">Le niveau est automatiquement récupéré depuis la classe. La clé est <b>classe + matière + semestre</b>.</div>`;
+ if(type==="enseignant")b=`<div class="form">${input("x-code","Matricule enseignant",obj?.code)}${input("x-name","Nom et prénoms",obj?.name)}${input("x-phone","Téléphone",obj?.phone)}${input("x-speciality","Spécialité",obj?.speciality)}${input("x-status","Statut",obj?.status||"Actif")}</div>`;
+ if(type==="note")b=`<div class="form">${select("x-class","Classe",optionsClasses(),obj?.classId)}${select("x-learner","Apprenant",optionsLearners(obj?.classId),obj?.learnerId)}${select("x-subject","Matière de la classe",db.subjects.filter(s=>assignmentFor(obj?.classId,s.id,obj?.semester)).map(s=>({id:s.id,label:s.name})),obj?.subjectId)}${select("x-sem","Semestre",SEMS.map(x=>({id:x,label:x})),obj?.semester)}${select("x-eval","Évaluation",EVALS.map(x=>({id:x,label:x})),obj?.evaluation)}${input("x-note","Note / 20",obj?.note??"","number","min='0' max='20' step='0.01'")}${input("x-comment","Observation",obj?.comment||"","text","class='full'")}</div><div class="notice">Une note n'est acceptée que si l'apprenant appartient à la classe et si la matière est affectée à cette classe.</div>`;
+ if(type==="edt")b=`<div class="form">${select("x-class","Classe",optionsClasses(),obj?.classId)}${select("x-subject","Matière",optionsSubjects(),obj?.subjectId)}${select("x-teacher","Enseignant",optionsTeachers(),obj?.teacherId)}${select("x-day","Jour",DAYS.map(x=>({id:x,label:x})),obj?.day)}${input("x-start","Heure début",obj?.start||"07:00","time")}${input("x-end","Heure fin",obj?.end||"08:00","time")}${input("x-room","Salle",obj?.room)}${input("x-sem","Semestre (facultatif)",obj?.semester||"")}</div><div class="notice">Un seul cours est enregistré. Il apparaît automatiquement dans l'EDT de la classe <b>et</b> celui de l'enseignant. Un conflit de classe ou d'enseignant est bloqué.</div>`;
+ $("modalBody").innerHTML=b;$("modal").classList.add("open");
+ if(type==="note"){
+   const refreshNoteChoices=()=>{let c=v("x-class"),sem=v("x-sem");$("x-learner").innerHTML='<option value="">Sélectionner</option>'+optionsLearners(c).map(x=>`<option value="${x.id}">${esc(x.label)}</option>`).join("");$("x-subject").innerHTML='<option value="">Sélectionner</option>'+db.subjects.filter(s=>assignmentFor(c,s.id,sem)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")};$("x-class").addEventListener("change",refreshNoteChoices);$("x-sem").addEventListener("change",refreshNoteChoices);
+ }
+}
+function closeModal(){$("modal").classList.remove("open");modalCtx=null}
+function v(id){return $(id)?.value||""}
+function submitModal(){
+ const t=modalCtx.type,o=modalCtx.obj||{id:uid(t.toUpperCase())};let n={...o};
+ if(t==="ceg")Object.assign(n,{name:v("x-name").trim(),code:v("x-code").trim(),phone:v("x-phone").trim(),address:v("x-address").trim()});
+ if(t==="niveau")Object.assign(n,{name:v("x-name").trim(),code:v("x-code").trim()});
+ if(t==="classe")Object.assign(n,{cegId:v("x-ceg"),levelId:v("x-level"),name:v("x-name").trim(),section:v("x-section").trim()});
+ if(t==="apprenant"){let c=get(db.classes,v("x-class"));Object.assign(n,{classId:v("x-class"),cegId:c?.cegId||"",matricule:v("x-mat").trim(),name:v("x-name").trim(),sex:v("x-sex").trim(),dob:v("x-dob"),status:v("x-status").trim()||"Actif"});}
+ if(t==="matiere")Object.assign(n,{code:v("x-code").trim(),name:v("x-name").trim(),category:v("x-cat").trim(),active:v("x-status")!=="Inactif"});
+ if(t==="affectation")Object.assign(n,{classId:v("x-class"),subjectId:v("x-subject"),teacherId:v("x-teacher"),semester:v("x-sem")});
+ if(t==="coefficient")Object.assign(n,{classId:v("x-class"),subjectId:v("x-subject"),semester:v("x-sem"),coef:Number(v("x-coef"))});
+ if(t==="enseignant")Object.assign(n,{code:v("x-code").trim(),name:v("x-name").trim(),phone:v("x-phone").trim(),speciality:v("x-speciality").trim(),status:v("x-status").trim()||"Actif"});
+ if(t==="note")Object.assign(n,{year:year(),classId:v("x-class"),learnerId:v("x-learner"),subjectId:v("x-subject"),semester:v("x-sem"),evaluation:v("x-eval"),note:v("x-note")===""?"":Number(v("x-note")),comment:v("x-comment").trim()});
+ if(t==="edt")Object.assign(n,{classId:v("x-class"),subjectId:v("x-subject"),teacherId:v("x-teacher"),day:v("x-day"),start:v("x-start"),end:v("x-end"),room:v("x-room").trim(),semester:v("x-sem").trim()});
+ if(["ceg","niveau","classe","apprenant","matiere","enseignant"].includes(t)&&!n.name)return alert("Le nom est obligatoire.");
+ if(t==="classe"&&(!n.cegId||!n.levelId))return alert("Sélectionnez le CEG et le niveau.");
+ if(t==="apprenant"&&(!n.classId||!n.matricule||!n.name))return alert("Classe, matricule et nom sont obligatoires.");
+ if(t==="affectation"&&(!n.classId||!n.subjectId||!n.teacherId))return alert("Classe, matière et enseignant sont obligatoires.");
+ if(t==="coefficient"&&(!n.classId||!n.subjectId||!n.semester||!(n.coef>=0)))return alert("Classe, matière, semestre et coefficient sont obligatoires.");
+ if(t==="note"){
+   let l=get(db.learners,n.learnerId),c=get(db.classes,n.classId);
+   if(!l||l.classId!==n.classId)return alert("L'apprenant n'appartient pas à cette classe.");
+   if(!assignmentFor(n.classId,n.subjectId,n.semester))return alert("Cette matière n'est pas affectée à la classe pour ce semestre.");
+   if(n.note!==""&&(n.note<0||n.note>20))return alert("La note doit être comprise entre 0 et 20.");
+   let dup=db.notes.find(x=>x.id!==n.id&&x.learnerId===n.learnerId&&x.subjectId===n.subjectId&&x.semester===n.semester&&x.evaluation===n.evaluation&&x.year===year());
+   if(dup)return alert("Cette évaluation existe déjà pour cet apprenant et cette matière.");
+ }
+ if(t==="edt"){
+   if(!n.classId||!n.subjectId||!n.teacherId||!n.day||!n.start||!n.end)return alert("Classe, matière, enseignant, jour et horaires sont obligatoires.");
+   if(n.start>=n.end)return alert("L'heure de fin doit être supérieure à l'heure de début.");
+   let conflict=scheduleConflict(n,n.id);
+   if(conflict)return alert("Conflit d'horaire : "+(conflict.classId===n.classId?"la classe est déjà occupée.":"l'enseignant est déjà occupé."));
+ }
+ let arr=arrFor(t),i=arr.findIndex(x=>x.id===n.id);
+ if(i>=0)arr[i]=n;else arr.push(n);
+ log(i>=0?"MODIFICATION":"AJOUT",t,n.id);
+ save();closeModal();
+}
+function removeEntity(type,id){
+ let arr=arrFor(type),x=arr.find(a=>a.id===id);if(!x)return;
+ if(!confirm("Supprimer cet élément ?"))return;
+ if(type==="classe"&&db.learners.some(l=>l.classId===id))return alert("Impossible : cette classe contient des apprenants.");
+ if(type==="matiere"&&db.assignments.some(a=>a.subjectId===id))return alert("Impossible : cette matière est utilisée dans des affectations.");
+ if(type==="enseignant"&&(db.assignments.some(a=>a.teacherId===id)||db.schedules.some(s=>s.teacherId===id)))return alert("Impossible : cet enseignant est encore affecté.");
+ if(type==="apprenant"&&db.notes.some(n=>n.learnerId===id))if(!confirm("Des notes existent pour cet apprenant. Supprimer quand même ?"))return;
+ arr.splice(arr.indexOf(x),1);log("SUPPRESSION",type,id);save();
+}
+function editEntity(type,id){openEntity(type,get(arrFor(type),id))}
+function actionBtns(type,id){return `<div class="actions"><button class="btn" onclick="editEntity('${type}','${id}')">Modifier</button><button class="btn danger" onclick="removeEntity('${type}','${id}')">Supprimer</button></div>`}
+function moduleHeader(title,desc,type,extra=""){return `<div class="card"><h2>${title}</h2><div class="muted" style="margin-bottom:11px">${desc}</div><div class="toolbar"><button class="btn primary" onclick="openEntity('${type}')">Insérer / Ajouter</button><button class="btn" onclick="setView('dashboard')">Retour</button>${extra}</div></div>`}
+function renderCRUD(id,title,desc,type,headers,rows){
+ $(id).innerHTML=moduleHeader(title,desc,type)+`<div class="card"><div class="tablewrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}<th>Actions</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.slice(0,-1).map(x=>`<td>${x}</td>`).join("")}<td>${actionBtns(type,r.at(-1))}</td></tr>`).join(""):`<tr><td class="empty" colspan="${headers.length+1}">Aucune donnée.</td></tr>`}</tbody></table></div></div>`;
+}
+function renderAll(){ $("yearInput").value=year();renderDashboard();renderCRUD("ceg","CEG","Les CEG sont les établissements racines.","ceg",["Code","Nom","Téléphone","Adresse"],db.cegs.map(x=>[esc(x.code),esc(x.name),esc(x.phone),esc(x.address),x.id]));
+ renderCRUD("niveaux","Niveaux","Les niveaux servent de référence aux classes.","niveau",["Code","Niveau"],db.levels.map(x=>[esc(x.code),esc(x.name),x.id]));
+ renderCRUD("classes","Classes","Chaque classe est rattachée à un CEG et un niveau.","classe",["CEG","Niveau","Classe","Section"],db.classes.map(x=>[esc(cegName(x.cegId)),esc(levelName(x.levelId)),esc(x.name),esc(x.section),x.id]));
+ renderCRUD("apprenants","Apprenants","Un apprenant appartient à une seule classe à un instant donné.","apprenant",["Matricule","Nom et prénoms","Classe","CEG","Statut"],db.learners.map(x=>[esc(x.matricule),esc(x.name),esc(className(x.classId)),esc(cegName(x.cegId)),esc(x.status),x.id]));
+ renderCRUD("matieres","Matières / disciplines","Référentiel des matières réellement enseignables.","matiere",["Code","Matière","Catégorie","Statut"],db.subjects.map(x=>[esc(x.code),esc(x.name),esc(x.category),x.active!==false?"Actif":"Inactif",x.id]));
+ renderAssignments();renderCoefficients();
+ renderCRUD("enseignants","Enseignants","Personnel enseignant utilisé dans les affectations et les emplois du temps.","enseignant",["Matricule","Nom","Téléphone","Spécialité","Statut"],db.teachers.map(x=>[esc(x.code),esc(x.name),esc(x.phone),esc(x.speciality),esc(x.status),x.id]));
+ renderSchedules();renderNotes();renderResults();renderExport();
+}
+function renderDashboard(){
+ let totalRequired=db.learners.reduce((s,l)=>s+db.subjects.filter(sub=>assignmentFor(l.classId,sub.id)).length*SEMS.length*EVALS.length,0);
+ $("dashboard").innerHTML=`<div class="card"><div class="notice"><b>Modèle de données :</b> CEG → classe → apprenants. Les matières et enseignants sont affectés à la classe. Les cours sont enregistrés une seule fois et apparaissent dans les deux emplois du temps. Les notes suivent 2 semestres × 4 évaluations : EPE1, EPE2, DEV1, DEV2.</div>
+ <div class="grid g6"><div class="stat"><span>CEG</span><div class="kpi">${db.cegs.length}</div></div><div class="stat"><span>Classes</span><div class="kpi">${db.classes.length}</div></div><div class="stat"><span>Apprenants</span><div class="kpi">${db.learners.length}</div></div><div class="stat"><span>Matières</span><div class="kpi">${db.subjects.length}</div></div><div class="stat"><span>Enseignants</span><div class="kpi">${db.teachers.length}</div></div><div class="stat"><span>Notes saisies</span><div class="kpi">${db.notes.filter(n=>n.note!==""&&n.note!=null).length}</div></div></div></div>
+ <div class="card"><h3>Contrôle de préparation</h3><div class="grid g3">
+ <div class="notice ${db.assignments.length?"success":"warning"}"><b>Affectations :</b> ${db.assignments.length} relation(s) classe–matière–enseignant.</div>
+ <div class="notice ${db.coefficients.length?"success":"warning"}"><b>Coefficients :</b> ${db.coefficients.length} coefficient(s).</div>
+ <div class="notice ${totalRequired===0?"warning":"success"}"><b>Emplacements de notes attendus :</b> ${totalRequired}.</div></div></div>
+ <div class="card"><h3>Actions rapides</h3><div class="toolbar"><button class="btn primary" onclick="openEntity('ceg')">+ CEG</button><button class="btn primary" onclick="openEntity('classe')">+ Classe</button><button class="btn primary" onclick="openEntity('apprenant')">+ Apprenant</button><button class="btn primary" onclick="openEntity('matiere')">+ Matière</button><button class="btn primary" onclick="openEntity('enseignant')">+ Enseignant</button><button class="btn primary" onclick="openEntity('affectation')">+ Affectation</button><button class="btn primary" onclick="openEntity('edt')">+ Cours</button><button class="btn primary" onclick="generateRequiredSlots()">Générer les évaluations</button></div></div>`;
+}
+function renderAssignments(){
+ let rows=db.assignments.map(a=>[esc(className(a.classId)),esc(levelName(get(db.classes,a.classId)?.levelId)),esc(subjectName(a.subjectId)),esc(teacherName(a.teacherId)),esc(a.semester||"Toute l'année"),a.id]);
+ $("affectations").innerHTML=moduleHeader("Affectations pédagogiques","Définissez quelles matières et quels enseignants suivent chaque classe. C'est la base des notes et des cours.","affectation",`<button class="btn" onclick="generateAssignmentsForClass()">Créer rapidement les affectations d'une classe</button>`)+`<div class="card"><div class="tablewrap"><table><thead><tr><th>Classe</th><th>Niveau</th><th>Matière</th><th>Enseignant</th><th>Semestre</th><th>Actions</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.slice(0,-1).map(x=>`<td>${x}</td>`).join("")}<td>${actionBtns("affectation",r.at(-1))}</td></tr>`).join(""):`<tr><td class="empty" colspan="6">Aucune affectation.</td></tr>`}</tbody></table></div></div>`;
+}
+function generateAssignmentsForClass(){
+ if(!db.classes.length||!db.subjects.length||!db.teachers.length)return alert("Créez d'abord au moins une classe, une matière et un enseignant.");
+ let c=prompt("ID de la classe à préparer (copiez l'ID depuis les données/export) :","");if(!c)return;
+ if(!get(db.classes,c))return alert("ID de classe introuvable.");
+ let teacher=db.teachers[0];let added=0;
+ db.subjects.filter(s=>s.active!==false).forEach(s=>{if(!assignmentFor(c,s.id)){db.assignments.push({id:uid("AFF"),classId:c,subjectId:s.id,teacherId:teacher.id,semester:""});added++}});
+ log("GENERATION","AFFECTATIONS","",added+" affectations créées");save();alert(added+" affectations créées avec le premier enseignant. Modifiez-les ensuite.");
+}
+function renderCoefficients(){
+ let rows=db.coefficients.map(a=>{let c=get(db.classes,a.classId);return [esc(className(a.classId)),esc(levelName(c?.levelId)),esc(subjectName(a.subjectId)),esc(a.semester),a.coef,a.id]});
+ $("coefficients").innerHTML=moduleHeader("Coefficients","Le coefficient est géré par classe + matière + semestre ; le niveau est déduit automatiquement de la classe.","coefficient")+`<div class="card"><div class="tablewrap"><table><thead><tr><th>Classe</th><th>Niveau</th><th>Matière</th><th>Semestre</th><th>Coefficient</th><th>Actions</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.slice(0,-1).map(x=>`<td>${x}</td>`).join("")}<td>${actionBtns("coefficient",r.at(-1))}</td></tr>`).join(""):`<tr><td class="empty" colspan="6">Aucun coefficient.</td></tr>`}</tbody></table></div></div>`;
+}
+function renderSchedules(){
+ let rows=db.schedules.slice().sort((a,b)=>(DAYS.indexOf(a.day)-DAYS.indexOf(b.day))||a.start.localeCompare(b.start)).map(s=>[esc(className(s.classId)),esc(s.day),esc(s.start+"–"+s.end),esc(subjectName(s.subjectId)),esc(teacherName(s.teacherId)),esc(s.room),esc(s.semester),s.id]);
+ $("edt-classe").innerHTML=moduleHeader("Emploi du temps des classes","Source unique des cours. Filtrez par classe et retrouvez les mêmes cours côté enseignant.","edt")+`<div class="card"><div class="grid g3"><div><label>Classe</label><select id="edtClassFilter"><option value="">Toutes</option>${optionsClasses().map(x=>`<option value="${x.id}">${esc(x.label)}</option>`).join("")}</select></div><div><label>Jour</label><select id="edtDayFilter"><option value="">Tous</option>${DAYS.map(x=>`<option>${x}</option>`).join("")}</select></div></div></div><div class="card"><div class="tablewrap"><table><thead><tr><th>Classe</th><th>Jour</th><th>Horaire</th><th>Matière</th><th>Enseignant</th><th>Salle</th><th>Semestre</th><th>Actions</th></tr></thead><tbody id="classScheduleBody"></tbody></table></div></div>`;
+ let tf=db.schedules.slice().sort((a,b)=>(DAYS.indexOf(a.day)-DAYS.indexOf(b.day))||a.start.localeCompare(b.start)).map(s=>[esc(teacherName(s.teacherId)),esc(s.day),esc(s.start+"–"+s.end),esc(subjectName(s.subjectId)),esc(className(s.classId)),esc(s.room),esc(s.semester),s.id]);
+ $("edt-enseignant").innerHTML=moduleHeader("Emploi du temps des enseignants","Même source de données que l'EDT classe : aucune duplication.","edt")+`<div class="card"><div><label>Enseignant</label><select id="edtTeacherFilter"><option value="">Tous</option>${optionsTeachers().map(x=>`<option value="${x.id}">${esc(x.label)}</option>`).join("")}</select></div></div><div class="card"><div class="tablewrap"><table><thead><tr><th>Enseignant</th><th>Jour</th><th>Horaire</th><th>Matière</th><th>Classe</th><th>Salle</th><th>Semestre</th><th>Actions</th></tr></thead><tbody id="teacherScheduleBody"></tbody></table></div></div>`;
+ $("edtClassFilter").addEventListener("input",filterSchedules);$("edtDayFilter").addEventListener("input",filterSchedules);$("edtTeacherFilter").addEventListener("input",filterSchedules);filterSchedules();
+}
+function filterSchedules(){
+ let c=v("edtClassFilter"),d=v("edtDayFilter"),t=v("edtTeacherFilter");
+ let cr=db.schedules.filter(s=>(!c||s.classId===c)&&(!d||s.day===d)).sort((a,b)=>(DAYS.indexOf(a.day)-DAYS.indexOf(b.day))||a.start.localeCompare(b.start));
+ let tr=db.schedules.filter(s=>!t||s.teacherId===t).sort((a,b)=>(DAYS.indexOf(a.day)-DAYS.indexOf(b.day))||a.start.localeCompare(b.start));
+ $("classScheduleBody").innerHTML=cr.length?cr.map(s=>`<tr><td>${esc(className(s.classId))}</td><td>${esc(s.day)}</td><td>${esc(s.start+"–"+s.end)}</td><td>${esc(subjectName(s.subjectId))}</td><td>${esc(teacherName(s.teacherId))}</td><td>${esc(s.room)}</td><td>${esc(s.semester)}</td><td>${actionBtns("edt",s.id)}</td></tr>`).join(""):`<tr><td class="empty" colspan="8">Aucun cours.</td></tr>`;
+ $("teacherScheduleBody").innerHTML=tr.length?tr.map(s=>`<tr><td>${esc(teacherName(s.teacherId))}</td><td>${esc(s.day)}</td><td>${esc(s.start+"–"+s.end)}</td><td>${esc(subjectName(s.subjectId))}</td><td>${esc(className(s.classId))}</td><td>${esc(s.room)}</td><td>${esc(s.semester)}</td><td>${actionBtns("edt",s.id)}</td></tr>`).join(""):`<tr><td class="empty" colspan="8">Aucun cours.</td></tr>`;
+}
+function renderNotes(){
+ $("notes").innerHTML=moduleHeader("Notes","Saisie contrôlée des EPE1, EPE2, DEV1 et DEV2 dans chacun des deux semestres.","note",`<button class="btn warn" onclick="generateRequiredSlots()">Générer les évaluations obligatoires</button><button class="btn" onclick="extractClassList()">Extraire la liste de la classe</button>`)+`<div class="card"><div class="grid g4"><div>${select("noteClass","Classe",optionsClasses(),"","Toutes")}</div><div>${select("noteLearner","Apprenant",optionsLearners(),"","Tous")}</div><div>${select("noteSem","Semestre",SEMS.map(x=>({id:x,label:x})),"","Tous")}</div><div><label>Évaluation</label><select id="noteEval"><option value="">Toutes</option>${EVALS.map(x=>`<option>${x}</option>`).join("")}</select></div></div></div><div class="card"><div class="tablewrap"><table><thead><tr><th>Classe</th><th>Apprenant</th><th>Matière</th><th>Semestre</th><th>Éval.</th><th>Note /20</th><th>Coefficient</th><th>Actions</th></tr></thead><tbody id="noteBody"></tbody></table></div></div>`;
+ ["noteClass","noteLearner","noteSem","noteEval"].forEach(id=>$(id).addEventListener("input",filterNotes));$("noteClass").addEventListener("change",()=>{let c=v("noteClass");$("noteLearner").innerHTML='<option value="">Tous</option>'+optionsLearners(c).map(x=>`<option value="${x.id}">${esc(x.label)}</option>`).join("");filterNotes()});filterNotes();
+}
+function filterNotes(){
+ let c=v("noteClass"),l=v("noteLearner"),s=v("noteSem"),e=v("noteEval");
+ let rows=db.notes.filter(n=>(!c||n.classId===c)&&(!l||n.learnerId===l)&&(!s||n.semester===s)&&(!e||n.evaluation===e));
+ $("noteBody").innerHTML=rows.length?rows.map(n=>`<tr><td>${esc(className(n.classId))}</td><td>${esc(learnerName(n.learnerId))}</td><td>${esc(subjectName(n.subjectId))}</td><td>${esc(n.semester)}</td><td><span class="tag">${esc(n.evaluation)}</span></td><td>${n.note===""?"":esc(n.note)}</td><td>${coefficientFor(n.classId,n.subjectId,n.semester)}</td><td>${actionBtns("note",n.id)}</td></tr>`).join(""):`<tr><td class="empty" colspan="8">Aucune note correspondant aux filtres.</td></tr>`;
+}
+function generateRequiredSlots(){
+ let added=0;
+ db.classes.forEach(c=>db.learners.filter(l=>l.classId===c.id).forEach(l=>{
+   db.subjects.filter(s=>assignmentFor(c.id,s.id)).forEach(s=>{
+     SEMS.forEach(sem=>EVALS.forEach(ev=>{
+       if(!db.notes.some(n=>n.year===year()&&n.learnerId===l.id&&n.subjectId===s.id&&n.semester===sem&&n.evaluation===ev)){
+         db.notes.push({id:uid("NOTE"),year:year(),classId:c.id,learnerId:l.id,subjectId:s.id,semester:sem,evaluation:ev,note:"",comment:""});added++;
+       }
+     }))
+   })
+ }));
+ log("GENERATION","NOTES","",added+" emplacements créés");save();alert(added+" emplacements d'évaluation créés.");
+}
+function renderResults(){
+ let rows=[];
+ db.learners.forEach(l=>SEMS.forEach(sem=>{
+   let notes=db.notes.filter(n=>n.learnerId===l.id&&n.semester===sem&&n.year===year()&&n.note!==""&&n.note!=null);
+   let bySub={};notes.forEach(n=>(bySub[n.subjectId]??=[]).push(Number(n.note)));
+   let num=0,den=0;Object.entries(bySub).forEach(([sid,vals])=>{let avg=vals.reduce((a,b)=>a+b,0)/vals.length,coef=coefficientFor(l.classId,sid,sem);if(coef>0){num+=avg*coef;den+=coef}});
+   let avg=den?num/den:null;rows.push([esc(l.name),esc(l.matricule),esc(className(l.classId)),sem,avg==null?"":avg.toFixed(2),notes.length]);
+ }));
+ $("resultats").innerHTML=`<div class="card"><h2>Résultats</h2><p class="muted">Moyenne semestrielle pondérée : moyenne des 4 évaluations disponibles par matière, puis pondération par coefficient.</p><div class="toolbar"><button class="btn" onclick="window.print()">Imprimer / PDF</button><button class="btn" onclick="exportWorkbook()">Exporter Excel</button></div><div class="tablewrap"><table><thead><tr><th>Apprenant</th><th>Matricule</th><th>Classe</th><th>Semestre</th><th>Moyenne /20</th><th>Notes présentes</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join("")}</tr>`).join(""):`<tr><td class="empty" colspan="6">Aucun résultat.</td></tr>`}</tbody></table></div></div>`;
+}
+function extractClassList(){
+ let c=v("noteClass");if(!c)return alert("Sélectionnez d'abord une classe.");
+ let cl=get(db.classes,c),ls=db.learners.filter(l=>l.classId===c).sort((a,b)=>a.name.localeCompare(b.name));
+ let html=`<div class="card"><h2>Liste de classe — ${esc(cl.name)}</h2><p>CEG : ${esc(cegName(cl.cegId))} — Niveau : ${esc(levelName(cl.levelId))}</p><div class="tablewrap"><table><thead><tr><th>N°</th><th>Matricule</th><th>Nom et prénoms</th><th>Sexe</th><th>Date naissance</th></tr></thead><tbody>${ls.map((l,i)=>`<tr><td>${i+1}</td><td>${esc(l.matricule)}</td><td>${esc(l.name)}</td><td>${esc(l.sex)}</td><td>${esc(l.dob)}</td></tr>`).join("")}</tbody></table></div></div>`;
+ let w=window.open("","_blank");w.document.write(`<html><head><title>Liste de classe</title><style>body{font-family:Arial;padding:25px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #999;padding:7px}h2{text-align:center}</style></head><body>${html}<script>window.print()<\/script></body></html>`);w.document.close();
+}
+function renderExport(){
+ $("export").innerHTML=`<div class="card"><h2>Export / sauvegarde</h2><div class="toolbar"><button class="btn primary" onclick="exportWorkbook()">Exporter toute la base Excel</button><button class="btn" onclick="downloadJSON()">Sauvegarder JSON</button><button class="btn" onclick="$('restore').click()">Restaurer JSON</button><input id="restore" type="file" accept=".json" hidden onchange="restoreJSON(event)"><button class="btn" onclick="window.print()">Imprimer / PDF</button><button class="btn danger" onclick="resetDB()">Réinitialiser</button></div><div class="notice">Les données sont enregistrées dans ce navigateur. Pour un usage simultané sur plusieurs ordinateurs, il faudra une API et une base serveur.</div><div class="card"><h3>Identifiant de stockage</h3><code>${DBKEY}</code><p class="muted">La sauvegarde JSON permet de transférer la base d'un ordinateur à un autre.</p></div></div>`;
+}
+function exportWorkbook(){
+ if(typeof XLSX==="undefined")return alert("Le module Excel n'est pas chargé. Vérifiez la connexion Internet puis réessayez.");
+ let wb=XLSX.utils.book_new();
+ let data={
+ CEG:db.cegs,NIVEAUX:db.levels,CLASSES:db.classes,APPRENANTS:db.learners,MATIERES:db.subjects,ENSEIGNANTS:db.teachers,
+ AFFECTATIONS:db.assignments,COEFFICIENTS:db.coefficients,NOTES:db.notes,EMPLOI_DU_TEMPS:db.schedules,HISTORIQUE:db.history
+ };
+ for(let [name,rows] of Object.entries(data)){let sheet=XLSX.utils.json_to_sheet(rows);XLSX.utils.book_append_sheet(wb,sheet,name.slice(0,31))}
+ XLSX.writeFile(wb,"Carnet_Scolaire_"+year()+".xlsx");
+}
+function downloadJSON(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="Carnet_Scolaire_"+year()+".json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function restoreJSON(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);db=migrate(d);save();alert("Base restaurée avec succès.")}catch(err){alert("Fichier JSON invalide.")}};r.readAsText(f)}
+function resetDB(){if(confirm("Réinitialiser toutes les données locales ?")){db=newDB();save();}}
+function changeYear(){let y=$("yearInput").value.trim();if(!/^\\d{4}-\\d{4}$/.test(y))return alert("Format attendu : 2026-2027");db.settings.year=y;log("PARAMETRE","ANNEE",y);save();alert("Année scolaire définie sur "+y)}
+function setView(vw){currentView=vw;document.querySelectorAll(".view").forEach(x=>x.classList.remove("show"));$(vw).classList.add("show");document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.view===vw));let t={dashboard:["Tableau de bord","Vue générale"],ceg:["CEG","Établissements"],classes:["Classes","Structure des classes"],apprenants:["Apprenants","Gestion des élèves"],niveaux:["Niveaux","Référentiel des niveaux"],matieres:["Matières","Référentiel pédagogique"],affectations:["Affectations pédagogiques","Classe — matière — enseignant"],coefficients:["Coefficients","Règles de pondération"],enseignants:["Enseignants","Personnel"],"edt-classe":["Emploi du temps — classes","Planning par classe"],"edt-enseignant":["Emploi du temps — enseignants","Planning par enseignant"],notes:["Notes","EPE1, EPE2, DEV1, DEV2"],resultats:["Résultats","Moyennes pondérées"],export:["Export / sauvegarde","Données"]};$("pageTitle").textContent=t[vw][0];$("pageSub").textContent=t[vw][1]}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
+renderAll();setView("dashboard");
+</script>
+</body></html>
